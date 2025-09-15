@@ -228,7 +228,7 @@ export default function AnalyticsScreen() {
               <PieChart
                 data={analyticsData.appUsage}
                 donut
-                showGradient
+                {...(Platform.OS !== 'web' && { showGradient: true })}
                 sectionAutoFocus
                 radius={80}
                 innerRadius={60}
