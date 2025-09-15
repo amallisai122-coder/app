@@ -13,7 +13,7 @@ from typing import Dict, Any, List
 import uuid
 
 # Backend URL from frontend environment
-BACKEND_URL = "https://cognition-boost-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://code-ignition-1.preview.emergentagent.com/api"
 
 class BackendTester:
     def __init__(self):
