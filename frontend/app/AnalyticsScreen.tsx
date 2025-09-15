@@ -84,8 +84,12 @@ export default function AnalyticsScreen() {
         return app.timeUsed < app.dailyLimit;
       });
 
+      // Get day abbreviation (Mon, Tue, etc.)
+      const dayLabel = date.toLocaleDateString('en-US', { weekday: 'short' });
+
       weeklyProgress.push({
-        value: (dayApps.length / Math.max(monitoredApps.length, 1)) * 100,
+        value: dayApps.length,
+        label: dayLabel,
         dataPointText: `${dayApps.length}`,
         hideDataPoint: false,
         dataPointColor: '#007AFF',
