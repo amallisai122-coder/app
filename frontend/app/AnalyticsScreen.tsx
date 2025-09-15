@@ -203,21 +203,15 @@ export default function AnalyticsScreen() {
         {analyticsData.dailyChallenges.length > 0 && (
           <View style={styles.chartCard}>
             <Text style={styles.chartTitle}>Daily Challenge Performance</Text>
-            <BarChart
-              data={analyticsData.dailyChallenges}
-              barWidth={22}
-              spacing={24}
-              roundedTop
-              roundedBottom
-              hideRules
-              xAxisThickness={0}
-              yAxisThickness={0}
-              yAxisTextStyle={{ color: '#8E8E93' }}
-              noOfSections={3}
-              maxValue={Math.max(5, Math.max(...analyticsData.dailyChallenges.map(d => d.value)))}
-              height={200}
-              width={screenWidth - 80}
-            />
+            <Text style={styles.chartSubtitle}>Recent 7 days</Text>
+            <View style={styles.statsGrid}>
+              {analyticsData.dailyChallenges.slice(-7).map((item, index) => (
+                <View key={index} style={styles.statItem}>
+                  <Text style={styles.statLabel}>{item.label}</Text>
+                  <Text style={styles.statValue}>{item.value}</Text>
+                </View>
+              ))}
+            </View>
           </View>
         )}
 
