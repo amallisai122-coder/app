@@ -244,6 +244,11 @@ async def get_usage_sessions(days: int = 30):
             "timestamp": {"$gte": start_date}
         }).to_list(1000)
         
+        # Convert ObjectId to string for JSON serialization
+        for session in sessions:
+            if "_id" in session:
+                session["_id"] = str(session["_id"])
+        
         return sessions
     except Exception as e:
         logger.error(f"Failed to get usage sessions: {e}")
