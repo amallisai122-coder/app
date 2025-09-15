@@ -197,17 +197,17 @@ export default function AnalyticsScreen() {
         <View style={styles.metricsContainer}>
           <View style={styles.metricCard}>
             <Ionicons name="trophy" size={24} color="#FFD700" />
-            <Text style={styles.metricNumber}>{currentStreak}</Text>
+            <Text style={styles.metricNumber}>{backendAnalytics?.streakDays || currentStreak}</Text>
             <Text style={styles.metricLabel}>Current Streak</Text>
           </View>
           <View style={styles.metricCard}>
             <Ionicons name="checkmark-circle" size={24} color="#34C759" />
-            <Text style={styles.metricNumber}>{analyticsData.correctChallenges}</Text>
+            <Text style={styles.metricNumber}>{backendAnalytics?.challengesCompleted || analyticsData.correctChallenges}</Text>
             <Text style={styles.metricLabel}>Challenges Won</Text>
           </View>
           <View style={styles.metricCard}>
             <Ionicons name="time" size={24} color="#007AFF" />
-            <Text style={styles.metricNumber}>{analyticsData.timeEarned}m</Text>
+            <Text style={styles.metricNumber}>{backendAnalytics?.timeEarned || analyticsData.timeEarned}m</Text>
             <Text style={styles.metricLabel}>Time Earned</Text>
           </View>
           <View style={styles.metricCard}>
