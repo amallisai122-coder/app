@@ -46,7 +46,7 @@
      })
 
      // Load your web app
-     win.loadURL('https://repo-diagnostics-1.preview.emergentagent.com')
+     win.loadURL('https://debian-downloader.preview.emergentagent.com')
      
      // Optional: Remove menu bar
      win.setMenuBarVisibility(false)
