@@ -236,20 +236,19 @@ export default function AnalyticsScreen() {
         <View style={styles.chartCard}>
           <Text style={styles.chartTitle}>Weekly Goal Progress</Text>
           <Text style={styles.chartSubtitle}>Days within daily limits</Text>
-          <LineChart
-            data={analyticsData.weeklyProgress}
-            height={150}
-            showVerticalLines
-            spacing={44}
-            initialSpacing={0}
-            color1="#007AFF"
-            dataPointsColor1="#007AFF"
-            hideRules
-            hideYAxisText
-            xAxisColor="#E5E5EA"
-            yAxisColor="#E5E5EA"
-            width={screenWidth - 80}
-          />
+          <View style={styles.progressGrid}>
+            {analyticsData.weeklyProgress.map((day, index) => (
+              <View key={index} style={styles.progressDay}>
+                <Text style={styles.progressLabel}>{day.label}</Text>
+                <View style={[
+                  styles.progressBar, 
+                  { backgroundColor: day.value >= 7 ? '#34C759' : '#FF3B30' }
+                ]}>
+                  <Text style={styles.progressValue}>{day.value}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
         </View>
 
         {/* Achievements */}
