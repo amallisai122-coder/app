@@ -219,31 +219,15 @@ export default function AnalyticsScreen() {
         {analyticsData.appUsage.length > 0 && (
           <View style={styles.chartCard}>
             <Text style={styles.chartTitle}>App Usage Distribution</Text>
-            <View style={styles.pieChartContainer}>
-              <PieChart
-                data={analyticsData.appUsage}
-                donut
-                {...(Platform.OS !== 'web' && { showGradient: true })}
-                sectionAutoFocus
-                radius={80}
-                innerRadius={60}
-                innerCircleColor={'#F2F2F7'}
-                centerLabelComponent={() => (
-                  <View style={styles.centerLabel}>
-                    <Text style={styles.centerLabelValue}>{getTotalUsage()}m</Text>
-                    <Text style={styles.centerLabelText}>Total</Text>
-                  </View>
-                )}
-              />
-              <View style={styles.legend}>
-                {analyticsData.appUsage.map((item, index) => (
-                  <View key={index} style={styles.legendItem}>
-                    <View style={[styles.legendColor, { backgroundColor: item.color }]} />
-                    <Text style={styles.legendText}>{item.label}</Text>
-                    <Text style={styles.legendValue}>{item.value}m</Text>
-                  </View>
-                ))}
-              </View>
+            <Text style={styles.chartSubtitle}>Time spent today</Text>
+            <View style={styles.usageList}>
+              {analyticsData.appUsage.map((app, index) => (
+                <View key={index} style={styles.usageItem}>
+                  <View style={[styles.colorDot, { backgroundColor: app.color }]} />
+                  <Text style={styles.appName}>{app.label}</Text>
+                  <Text style={styles.usageTime}>{app.value}m</Text>
+                </View>
+              ))}
             </View>
           </View>
         )}
