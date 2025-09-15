@@ -26,10 +26,25 @@ export default function AnalyticsScreen() {
 
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month'>('week');
   const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [backendAnalytics, setBackendAnalytics] = useState<any>(null);
 
   useEffect(() => {
+    fetchBackendAnalytics();
     calculateAnalytics();
   }, [monitoredApps, completedChallenges, usageSessions, selectedPeriod]);
+
+  const fetchBackendAnalytics = async () => {
+    try {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/analytics`);
+      if (response.ok) {
+        const data = await response.json();
+        setBackendAnalytics(data);
+        console.log('Backend analytics:', data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch backend analytics:', error);
+    }
+  };
 
   const calculateAnalytics = () => {
     const now = new Date();
