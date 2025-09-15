@@ -225,6 +225,9 @@ async def submit_challenge(challenge_id: str, answer: int):
             "timeReward": challenge["timeReward"] if correct else 0,
             "correctAnswer": challenge["answer"]
         }
+    except HTTPException:
+        # Re-raise HTTP exceptions (like 404)
+        raise
     except Exception as e:
         logger.error(f"Challenge submission failed: {e}")
         raise HTTPException(status_code=500, detail="Failed to submit challenge")
