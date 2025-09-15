@@ -59,7 +59,6 @@ export default function AnalyticsScreen() {
         value: daysChallenges.filter(c => c.correct).length,
         label: date.getDate().toString(),
         frontColor: '#007AFF',
-        ...(Platform.OS !== 'web' && { gradientColor: '#007AFF' }),
         spacing: 6,
         labelWidth: 30,
         labelTextStyle: { color: '#8E8E93', fontSize: 10 },
