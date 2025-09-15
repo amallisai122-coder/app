@@ -309,6 +309,27 @@ export default function AnalyticsScreen() {
           </View>
         </View>
 
+        {/* Backend Analytics Summary */}
+        {backendAnalytics && (
+          <View style={styles.summaryCard}>
+            <Text style={styles.chartTitle}>Server Analytics</Text>
+            <View style={styles.summaryStats}>
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryLabel}>Total Time Used</Text>
+                <Text style={styles.summaryValue}>{backendAnalytics.totalTimeUsed}m</Text>
+              </View>
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryLabel}>Average Daily</Text>
+                <Text style={styles.summaryValue}>{backendAnalytics.averageDaily.toFixed(1)}m</Text>
+              </View>
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryLabel}>Most Used App</Text>
+                <Text style={styles.summaryValue}>{backendAnalytics.mostUsedApp}</Text>
+              </View>
+            </View>
+          </View>
+        )}
+
         {/* Summary Stats */}
         <View style={styles.summaryCard}>
           <Text style={styles.chartTitle}>Summary</Text>
