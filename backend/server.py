@@ -169,6 +169,7 @@ def generate_fallback_challenge(difficulty: str) -> Challenge:
         ],
     }
     
+    # Validate difficulty and default to medium if invalid
     difficulty_key = difficulty if difficulty in challenges else "medium"
     selected = random.choice(challenges[difficulty_key])
     
