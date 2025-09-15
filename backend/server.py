@@ -272,9 +272,7 @@ async def get_analytics():
         from datetime import timedelta
         start_date = datetime.utcnow() - timedelta(days=30)
         
-        challenges = await db.challenges.find({
-            "_id": {"$gte": start_date}
-        }).to_list(1000)
+        challenges = await db.challenges.find({}).to_list(1000)
         
         usage_sessions = await db.usage_sessions.find({
             "timestamp": {"$gte": start_date}
