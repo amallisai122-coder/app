@@ -557,4 +557,29 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     textAlign: 'center',
   },
+  usageList: {
+    gap: 12,
+  },
+  usageItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  colorDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 12,
+  },
+  appName: {
+    flex: 1,
+    fontSize: 16,
+    color: '#000',
+    fontWeight: '500',
+  },
+  usageTime: {
+    fontSize: 16,
+    color: '#8E8E93',
+    fontWeight: '600',
+  },
 });
