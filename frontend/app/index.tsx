@@ -14,7 +14,7 @@ import SettingsScreen from './SettingsScreen';
 import SetupScreen from './SetupScreen';
 
 // Store
-import { AppStateProvider } from ./store/AppStore';
+import { AppStateProvider } from './store/AppStore';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
