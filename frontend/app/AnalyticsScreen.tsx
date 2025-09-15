@@ -581,4 +581,34 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     fontWeight: '600',
   },
+  progressGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  progressDay: {
+    alignItems: 'center',
+    flex: 1,
+    minWidth: 40,
+  },
+  progressLabel: {
+    fontSize: 12,
+    color: '#8E8E93',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  progressBar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  progressValue: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#FFF',
+    textAlign: 'center',
+  },
 });
