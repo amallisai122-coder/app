@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { LineChart, BarChart, PieChart } from 'react-native-gifted-charts';
+// Temporarily comment out charts to fix gradient issue
+// import { LineChart, BarChart, PieChart } from 'react-native-gifted-charts';
 import { useAppState } from './store/AppStore';
 
 const { width: screenWidth } = Dimensions.get('window');
