@@ -82,12 +82,18 @@ async def generate_ai_challenge(difficulty: str, user_performance: List[Dict]) -
             success_rate = correct_count / len(recent_performance)
         
         # Adjust difficulty based on performance
+        valid_difficulties = ["easy", "medium", "hard"]
         if success_rate > 0.8 and difficulty == "auto":
             actual_difficulty = "hard"
         elif success_rate < 0.4 and difficulty == "auto":
             actual_difficulty = "easy"
+        elif difficulty in valid_difficulties:
+            actual_difficulty = difficulty
+        elif difficulty == "auto":
+            actual_difficulty = "medium"
         else:
-            actual_difficulty = difficulty if difficulty != "auto" else "medium"
+            # Invalid difficulty, default to medium
+            actual_difficulty = "medium"
         
         # Create LLM chat instance
         chat = LlmChat(
