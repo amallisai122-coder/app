@@ -7,11 +7,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, StatusBar } from 'react-native';
 
 // Screens
-import MonitorScreen from './screens/MonitorScreen';
-import ChallengeScreen from './screens/ChallengeScreen';
-import AnalyticsScreen from './screens/AnalyticsScreen';
-import SettingsScreen from './screens/SettingsScreen';
-import SetupScreen from './screens/SetupScreen';
+import MonitorScreen from './MonitorScreen';
+import ChallengeScreen from './ChallengeScreen';
+import AnalyticsScreen from './AnalyticsScreen';
+import SettingsScreen from './SettingsScreen';
+import SetupScreen from './SetupScreen';
 
 // Store
 import { AppStateProvider } from './store/AppStore';
