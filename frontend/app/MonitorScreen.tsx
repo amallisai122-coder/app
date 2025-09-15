@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useAppState } from '../store/AppStore';
+import { useAppState } from './store/AppStore';
 
 export default function MonitorScreen() {
   const {

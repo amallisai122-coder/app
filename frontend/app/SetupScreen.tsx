@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useAppState } from '../store/AppStore';
+import { useAppState } from './store/AppStore';
 
 export default function SetupScreen() {
   const navigation = useNavigation();
