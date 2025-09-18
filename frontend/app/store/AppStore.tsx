@@ -518,40 +518,6 @@ function generateLocalChallenge(difficulty: 'easy' | 'medium' | 'hard'): Challen
   };
 }
 
-// Local challenge generation fallback
-function generateLocalChallenge(difficulty: 'easy' | 'medium' | 'hard'): Challenge {
-  const challenges = {
-    easy: [
-      { question: '7 + 8 = ?', answer: 15, timeReward: 5 },
-      { question: '15 - 6 = ?', answer: 9, timeReward: 5 },
-      { question: '4 × 3 = ?', answer: 12, timeReward: 5 },
-      { question: '18 ÷ 6 = ?', answer: 3, timeReward: 5 },
-    ],
-    medium: [
-      { question: '23 + 47 = ?', answer: 70, timeReward: 8 },
-      { question: '84 - 29 = ?', answer: 55, timeReward: 8 },
-      { question: '12 × 7 = ?', answer: 84, timeReward: 8 },
-      { question: '144 ÷ 12 = ?', answer: 12, timeReward: 8 },
-    ],
-    hard: [
-      { question: '156 + 289 = ?', answer: 445, timeReward: 12 },
-      { question: '500 - 247 = ?', answer: 253, timeReward: 12 },
-      { question: '23 × 18 = ?', answer: 414, timeReward: 12 },
-      { question: '2880 ÷ 24 = ?', answer: 120, timeReward: 12 },
-    ],
-  };
-
-  const difficultyQuestions = challenges[difficulty];
-  const selectedQuestion = difficultyQuestions[Math.floor(Math.random() * difficultyQuestions.length)];
-
-  return {
-    id: Date.now().toString(),
-    ...selectedQuestion,
-    difficulty,
-    completed: false,
-  };
-}
-
 // Context Provider
 const AppStateContext = createContext<AppState | null>(null);
 
