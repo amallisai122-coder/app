@@ -561,6 +561,94 @@ async def health_check():
         "ai_enabled": bool(llm_api_key)
     }
 
+@api_router.get("/apps/search")
+async def search_apps(query: Optional[str] = None, category: Optional[str] = None, limit: int = 50):
+    """Search and filter apps in registry"""
+    try:
+        # Build search query
+        search_filter = {}
+        
+        if query:
+            search_filter["$or"] = [
+                {"appName": {"$regex": query, "$options": "i"}},
+                {"displayName": {"$regex": query, "$options": "i"}},
+                {"packageName": {"$regex": query, "$options": "i"}}
+            ]
+        
+        if category:
+            search_filter["category"] = category
+        
+        apps = await db.app_registry.find(search_filter).limit(limit).to_list(limit)
+        
+        # Convert ObjectId to string for JSON serialization
+        for app in apps:
+            if "_id" in app:
+                app["_id"] = str(app["_id"])
+        
+        return {
+            "apps": apps,
+            "count": len(apps),
+            "query": query,
+            "category": category
+        }
+    except Exception as e:
+        logger.error(f"Failed to search apps: {e}")
+        raise HTTPException(status_code=500, detail="Failed to search apps")
+
+@api_router.get("/apps/categories")
+async def get_app_categories():
+    """Get all available app categories"""
+    try:
+        # Get unique categories from registry
+        categories = await db.app_registry.distinct("category")
+        
+        # Count apps per category
+        category_counts = []
+        for category in categories:
+            count = await db.app_registry.count_documents({"category": category})
+            category_counts.append({
+                "name": category,
+                "count": count,
+                "displayName": category.replace("_", " ").title()
+            })
+        
+        return sorted(category_counts, key=lambda x: x["count"], reverse=True)
+    except Exception as e:
+        logger.error(f"Failed to get app categories: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get app categories")
+
+@api_router.post("/apps/bulk-register")
+async def bulk_register_apps(apps: List[AppInfo]):
+    """Bulk register apps from device scan"""
+    try:
+        registered_count = 0
+        updated_count = 0
+        
+        for app_info in apps:
+            existing_app = await db.app_registry.find_one({"packageName": app_info.packageName})
+            
+            if existing_app:
+                # Update existing app
+                await db.app_registry.update_one(
+                    {"packageName": app_info.packageName},
+                    {"$set": app_info.dict()}
+                )
+                updated_count += 1
+            else:
+                # Insert new app
+                await db.app_registry.insert_one(app_info.dict())
+                registered_count += 1
+        
+        return {
+            "success": True,
+            "registered": registered_count,
+            "updated": updated_count,
+            "total": len(apps)
+        }
+    except Exception as e:
+        logger.error(f"Failed to bulk register apps: {e}")
+        raise HTTPException(status_code=500, detail="Failed to bulk register apps")
+
 # Include the router in the main app
 app.include_router(api_router)
 
