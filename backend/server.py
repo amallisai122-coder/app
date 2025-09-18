@@ -262,7 +262,136 @@ async def submit_challenge(challenge_id: str, answer: int):
         logger.error(f"Challenge submission failed: {e}")
         raise HTTPException(status_code=500, detail="Failed to submit challenge")
 
-@api_router.post("/usage/session", response_model=UsageSession)
+# API Routes for Dynamic App Management
+
+@api_router.post("/apps/register", response_model=AppInfo)
+async def register_app(app_info: AppInfo):
+    """Register a new app detected on the device"""
+    try:
+        # Check if app already exists
+        existing_app = await db.app_registry.find_one({"packageName": app_info.packageName})
+        if existing_app:
+            # Update existing app info
+            await db.app_registry.update_one(
+                {"packageName": app_info.packageName},
+                {"$set": app_info.dict()}
+            )
+        else:
+            # Insert new app
+            await db.app_registry.insert_one(app_info.dict())
+        
+        return app_info
+    except Exception as e:
+        logger.error(f"Failed to register app: {e}")
+        raise HTTPException(status_code=500, detail="Failed to register app")
+
+@api_router.get("/apps/registry")
+async def get_app_registry():
+    """Get all registered apps from device scan"""
+    try:
+        apps = await db.app_registry.find({}).to_list(1000)
+        
+        # Convert ObjectId to string for JSON serialization
+        for app in apps:
+            if "_id" in app:
+                app["_id"] = str(app["_id"])
+        
+        return apps
+    except Exception as e:
+        logger.error(f"Failed to get app registry: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get app registry")
+
+@api_router.post("/apps/monitored", response_model=MonitoredApp)
+async def add_monitored_app(monitored_app: MonitoredApp):
+    """Add an app to monitoring list"""
+    try:
+        # Check if already being monitored
+        existing = await db.monitored_apps.find_one({
+            "packageName": monitored_app.packageName,
+            "userId": monitored_app.userId,
+            "isActive": True
+        })
+        
+        if existing:
+            raise HTTPException(status_code=400, detail="App is already being monitored")
+        
+        await db.monitored_apps.insert_one(monitored_app.dict())
+        return monitored_app
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to add monitored app: {e}")
+        raise HTTPException(status_code=500, detail="Failed to add monitored app")
+
+@api_router.get("/apps/monitored")
+async def get_monitored_apps(user_id: str = "default"):
+    """Get all monitored apps for a user"""
+    try:
+        apps = await db.monitored_apps.find({
+            "userId": user_id,
+            "isActive": True
+        }).to_list(100)
+        
+        # Convert ObjectId to string for JSON serialization
+        for app in apps:
+            if "_id" in app:
+                app["_id"] = str(app["_id"])
+        
+        return apps
+    except Exception as e:
+        logger.error(f"Failed to get monitored apps: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get monitored apps")
+
+@api_router.put("/apps/monitored/{app_id}/usage")
+async def update_app_usage(app_id: str, time_used: int):
+    """Update app usage time"""
+    try:
+        result = await db.monitored_apps.update_one(
+            {"id": app_id},
+            {
+                "$set": {
+                    "timeUsed": time_used,
+                    "isBlocked": time_used >= await get_app_daily_limit(app_id),
+                    "updatedAt": datetime.utcnow()
+                }
+            }
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Monitored app not found")
+        
+        return {"success": True, "timeUsed": time_used}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update app usage: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update app usage")
+
+@api_router.delete("/apps/monitored/{app_id}")
+async def remove_monitored_app(app_id: str):
+    """Remove app from monitoring"""
+    try:
+        result = await db.monitored_apps.update_one(
+            {"id": app_id},
+            {"$set": {"isActive": False, "updatedAt": datetime.utcnow()}}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Monitored app not found")
+        
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to remove monitored app: {e}")
+        raise HTTPException(status_code=500, detail="Failed to remove monitored app")
+
+async def get_app_daily_limit(app_id: str) -> int:
+    """Helper function to get app's daily limit"""
+    app = await db.monitored_apps.find_one({"id": app_id})
+    return app.get("dailyLimit", 60) if app else 60
+
+# Enhanced usage session logging with real app data
 async def log_usage_session(session: UsageSession):
     """Log a usage session"""
     try:
