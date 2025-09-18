@@ -141,11 +141,14 @@ class BackendTester:
         try:
             session_data = {
                 "id": str(uuid.uuid4()),
+                "userId": "default",
                 "appId": "com.instagram.android",
+                "packageName": "com.instagram.android",  # Added missing field
                 "appName": "Instagram",
                 "duration": 45,  # 45 minutes
                 "timestamp": datetime.utcnow().isoformat(),
-                "date": datetime.utcnow().strftime("%Y-%m-%d")
+                "date": datetime.utcnow().strftime("%Y-%m-%d"),
+                "sessionType": "active"
             }
             
             async with self.session.post(f"{BACKEND_URL}/usage/session",
