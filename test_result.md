@@ -195,6 +195,102 @@ backend:
         agent: "testing"
         comment: "Fixed error handling. Invalid challenge IDs now properly return 404. Invalid difficulty levels fallback to medium difficulty as expected."
 
+  - task: "Dynamic App Registration API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "POST /api/apps/register endpoint working correctly. Successfully registers new apps with all required fields (packageName, appName, displayName, category, icon, etc.). Handles both new registrations and updates to existing apps."
+
+  - task: "App Registry Retrieval API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "GET /api/apps/registry endpoint working correctly. Successfully retrieves all registered apps from device scan. Properly handles ObjectId serialization for JSON responses."
+
+  - task: "Monitored App Management APIs"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Complete monitored app management working: POST /api/apps/monitored (add app to monitoring), GET /api/apps/monitored (get user's monitored apps), PUT /api/apps/monitored/{app_id}/usage (update usage time), DELETE /api/apps/monitored/{app_id} (remove from monitoring). All endpoints handle proper validation and error responses."
+
+  - task: "App Search and Categories APIs"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "GET /api/apps/search endpoint working with query, category, and limit parameters. GET /api/apps/categories endpoint successfully returns all available categories with counts. Search functionality supports app name, display name, and package name filtering."
+
+  - task: "Bulk App Registration API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "POST /api/apps/bulk-register endpoint working correctly. Successfully handles bulk registration of multiple apps from device scan. Returns proper counts for registered vs updated apps."
+
+  - task: "Enhanced Usage Session Logging API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "POST /api/usage/session endpoint enhanced and working correctly. Supports all required fields including userId, packageName, sessionType. Automatically updates monitored app usage when session is logged for a monitored app."
+
+  - task: "Daily App Usage Tracking API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "GET /api/usage/apps/{package_name}/daily endpoint working correctly. Successfully retrieves daily usage statistics for specific apps including total usage time and session count."
+
+  - task: "Realtime Usage Data API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "GET /api/usage/realtime endpoint working correctly. Provides real-time usage data for all monitored apps including daily limits, current usage, blocked status, and usage percentages."
+
   - task: "AI Integration - Emergent LLM"
     implemented: true
     working: true
