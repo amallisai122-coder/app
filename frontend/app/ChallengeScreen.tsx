@@ -79,20 +79,27 @@ export default function ChallengeScreen() {
     }
   };
 
-  const todayStats = {
-    attempted: completedChallenges.filter(c => {
-      const challengeDate = new Date(parseInt(c.id));
-      return !isNaN(challengeDate.getTime()) && challengeDate.toDateString() === new Date().toDateString();
-    }).length,
-    correct: completedChallenges.filter(c => {
-      const challengeDate = new Date(parseInt(c.id));
-      return !isNaN(challengeDate.getTime()) && challengeDate.toDateString() === new Date().toDateString() && c.correct;
-    }).length,
-    timeEarned: completedChallenges.filter(c => {
-      const challengeDate = new Date(parseInt(c.id));
-      return !isNaN(challengeDate.getTime()) && challengeDate.toDateString() === new Date().toDateString() && c.correct;
-    }).reduce((sum, c) => sum + c.timeReward, 0),
-  };
+  const todayStats = useMemo(() => {
+    const today = new Date().toDateString();
+    const todaysChallenges = completedChallenges.filter(c => {
+      // Check if the challenge was completed today
+      // Since challenge id is timestamp-based, we can extract the date
+      const challengeTimestamp = parseInt(c.id);
+      if (!isNaN(challengeTimestamp)) {
+        const challengeDate = new Date(challengeTimestamp);
+        return challengeDate.toDateString() === today;
+      }
+      return false;
+    });
+
+    return {
+      attempted: todaysChallenges.length,
+      correct: todaysChallenges.filter(c => c.correct).length,
+      timeEarned: todaysChallenges
+        .filter(c => c.correct)
+        .reduce((sum, c) => sum + c.timeReward, 0),
+    };
+  }, [completedChallenges]);
 
   return (
     <SafeAreaView style={styles.container}>
