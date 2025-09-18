@@ -46,7 +46,7 @@
      })
 
      // Load your web app
-     win.loadURL('https://dynamic-code-fix.preview.emergentagent.com')
+     win.loadURL('https://code-review-61.preview.emergentagent.com')
      
      // Optional: Remove menu bar
      win.setMenuBarVisibility(false)

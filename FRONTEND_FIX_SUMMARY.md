@@ -14,13 +14,13 @@ The React Native/Expo development server was failing due to **file watcher limit
 ## 🎯 **Current Status: FULLY WORKING**
 
 ### ✅ **Backend** (100% Functional)
-- **URL**: `https://dynamic-code-fix.preview.emergentagent.com/api/`
+- **URL**: `https://code-review-61.preview.emergentagent.com/api/`
 - **Health Check**: ✅ Healthy with AI enabled
 - **Challenge Generation**: ✅ AI-powered using Emergent LLM (GPT-4o-mini)
 - **All API Endpoints**: ✅ 13/13 tests passed (100% success rate)
 
 ### ✅ **Frontend** (Fully Operational)
-- **URL**: `https://dynamic-code-fix.preview.emergentagent.com`
+- **URL**: `https://code-review-61.preview.emergentagent.com`
 - **Monitor Screen**: ✅ App usage tracking interface
 - **Challenges Screen**: ✅ Math challenge interface with scoring
 - **Analytics Screen**: ✅ Progress tracking and statistics
@@ -44,8 +44,8 @@ The React Native/Expo development server was failing due to **file watcher limit
 ## 🚀 **How to Use Your App**
 
 ### **Access Your App**
-- **Frontend**: https://dynamic-code-fix.preview.emergentagent.com
-- **API Documentation**: https://dynamic-code-fix.preview.emergentagent.com/api/
+- **Frontend**: https://code-review-61.preview.emergentagent.com
+- **API Documentation**: https://code-review-61.preview.emergentagent.com/api/
 
 ### **Key Features Available**
 1. **App Monitoring**: Track usage of different applications
@@ -56,15 +56,15 @@ The React Native/Expo development server was failing due to **file watcher limit
 ### **API Testing Examples**
 ```bash
 # Generate a challenge
-curl -X POST https://dynamic-code-fix.preview.emergentagent.com/api/challenges/generate \
+curl -X POST https://code-review-61.preview.emergentagent.com/api/challenges/generate \
   -H "Content-Type: application/json" \
   -d '{"difficulty": "medium"}'
 
 # Get analytics
-curl https://dynamic-code-fix.preview.emergentagent.com/api/analytics
+curl https://code-review-61.preview.emergentagent.com/api/analytics
 
 # Health check
-curl https://dynamic-code-fix.preview.emergentagent.com/api/health
+curl https://code-review-61.preview.emergentagent.com/api/health
 ```
 
 ## 🎊 **Result**
