@@ -522,8 +522,9 @@ class BackendTester:
     async def run_all_tests(self):
         """Run all backend tests"""
         print("🧠 Brain Rot Reduction App - Backend API Testing")
-        print("=" * 60)
+        print("=" * 80)
         print(f"Testing backend at: {BACKEND_URL}")
+        print("Testing Dynamic App Management & Enhanced Usage Tracking")
         print()
         
         # Test 1: Health Check
@@ -549,7 +550,7 @@ class BackendTester:
                 wrong_answer = new_challenge["answer"] + 1
                 await self.test_challenge_submission(new_challenge["id"], wrong_answer)
         
-        # Test 4: Usage Session Logging
+        # Test 4: Usage Session Logging (Original)
         await self.test_usage_session_logging()
         
         # Test 5: Usage Sessions Retrieval
@@ -558,13 +559,41 @@ class BackendTester:
         # Test 6: Analytics
         await self.test_analytics()
         
-        # Test 7: Error Handling
+        # NEW DYNAMIC APP MANAGEMENT TESTS
+        print("🔄 Testing Dynamic App Management Features...")
+        print("-" * 50)
+        
+        # Test 7: App Registration
+        await self.test_app_registration()
+        
+        # Test 8: App Registry Retrieval
+        await self.test_app_registry_retrieval()
+        
+        # Test 9: Bulk App Registration
+        await self.test_bulk_app_registration()
+        
+        # Test 10: App Search and Categories
+        await self.test_app_search_and_categories()
+        
+        # Test 11: Monitored App Management
+        await self.test_monitored_app_management()
+        
+        # NEW ENHANCED USAGE TRACKING TESTS
+        print("📊 Testing Enhanced Usage Tracking Features...")
+        print("-" * 50)
+        
+        # Test 12: Enhanced Usage Tracking
+        await self.test_enhanced_usage_tracking()
+        
+        # Test 13: Error Handling (Updated with new endpoints)
+        print("🛡️ Testing Error Handling...")
+        print("-" * 50)
         await self.test_error_handling()
         
         # Summary
-        print("=" * 60)
-        print("📊 TEST SUMMARY")
-        print("=" * 60)
+        print("=" * 80)
+        print("📊 COMPREHENSIVE TEST SUMMARY")
+        print("=" * 80)
         
         passed = sum(1 for result in self.test_results if result["success"])
         total = len(self.test_results)
@@ -579,6 +608,9 @@ class BackendTester:
             for result in self.test_results:
                 if not result["success"]:
                     print(f"  • {result['test']}: {result['details']}")
+        else:
+            print("\n✅ ALL TESTS PASSED!")
+            print("Dynamic App Management and Enhanced Usage Tracking are fully functional!")
         
         return passed == total
 
