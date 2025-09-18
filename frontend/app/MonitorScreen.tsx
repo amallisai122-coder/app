@@ -7,40 +7,54 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppState } from './store/AppStore';
+import DynamicAppSelection from './DynamicAppSelection';
+import { DetectedApp } from './services/AppDetectionService';
 
 export default function MonitorScreen() {
   const {
     monitoredApps,
-    addMonitoredApp,
-    updateAppUsage,
+    addMonitoredAppsFromDetected,
+    refreshRealTimeUsage,
     generateChallenge,
     currentChallenge,
+    startUsageMonitoring,
   } = useAppState();
 
-  const [showAddApp, setShowAddApp] = useState(false);
+  const [showAppSelection, setShowAppSelection] = useState(false);
   const [showChallengeModal, setShowChallengeModal] = useState(false);
   const [selectedApp, setSelectedApp] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Simulate app usage tracking (in real app, this would monitor actual usage)
+  // Start usage monitoring when component mounts
+  useEffect(() => {
+    startUsageMonitoring();
+  }, []);
+
+  // Auto-refresh usage data every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      monitoredApps.forEach(app => {
-        if (!app.isBlocked) {
-          // Simulate random usage increment
-          const increment = Math.random() > 0.8 ? 1 : 0;
-          if (increment > 0) {
-            updateAppUsage(app.id, app.timeUsed + increment);
-          }
-        }
-      });
-    }, 30000); // Check every 30 seconds
+      refreshRealTimeUsage();
+    }, 30000);
 
     return () => clearInterval(interval);
-  }, [monitoredApps, updateAppUsage]);
+  }, []);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refreshRealTimeUsage();
+    } catch (error) {
+      console.error('Refresh failed:', error);
+      Alert.alert('Error', 'Failed to refresh usage data');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const handleAppBlock = async (appId: string) => {
     setSelectedApp(appId);
@@ -48,16 +62,41 @@ export default function MonitorScreen() {
     setShowChallengeModal(true);
   };
 
-  const addSampleApps = () => {
-    const sampleApps = [
-      { name: 'Instagram', packageName: 'com.instagram.android', dailyLimit: 30 },
-      { name: 'TikTok', packageName: 'com.tiktok.android', dailyLimit: 45 },
-      { name: 'Twitter', packageName: 'com.twitter.android', dailyLimit: 25 },
-      { name: 'YouTube', packageName: 'com.youtube.android', dailyLimit: 60 },
-    ];
+  const handleAppsSelected = async (selectedApps: DetectedApp[]) => {
+    try {
+      // Show limit selection dialog for each app
+      const customLimits: Record<string, number> = {};
+      
+      for (const app of selectedApps) {
+        const defaultLimit = getDefaultLimitByCategory(app.category);
+        customLimits[app.packageName] = defaultLimit;
+      }
 
-    sampleApps.forEach(app => addMonitoredApp(app));
-    setShowAddApp(false);
+      await addMonitoredAppsFromDetected(selectedApps, customLimits);
+      
+      Alert.alert(
+        'Success', 
+        `Added ${selectedApps.length} app${selectedApps.length > 1 ? 's' : ''} to monitoring!`
+      );
+    } catch (error) {
+      console.error('Failed to add apps:', error);
+      Alert.alert('Error', 'Failed to add apps to monitoring');
+    }
+  };
+
+  const getDefaultLimitByCategory = (category: string): number => {
+    const limits: Record<string, number> = {
+      social: 30,
+      entertainment: 60,
+      games: 45,
+      communication: 120,
+      music: 180,
+      news: 45,
+      productivity: 240,
+      shopping: 30,
+      finance: 60,
+    };
+    return limits[category] || 60;
   };
 
   const formatTime = (minutes: number) => {
@@ -76,14 +115,34 @@ export default function MonitorScreen() {
     return '#34C759';
   };
 
+  const getCategoryIcon = (category?: string) => {
+    const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
+      social: 'people',
+      entertainment: 'play-circle',
+      communication: 'chatbubbles',
+      music: 'musical-notes',
+      news: 'newspaper',
+      productivity: 'briefcase',
+      games: 'game-controller',
+      shopping: 'bag',
+      finance: 'card',
+    };
+    return icons[category || 'social'] || 'apps';
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+      >
         <View style={styles.header}>
           <Text style={styles.title}>App Monitor</Text>
           <TouchableOpacity
             style={styles.addButton}
-            onPress={() => setShowAddApp(true)}
+            onPress={() => setShowAppSelection(true)}
           >
             <Ionicons name="add" size={24} color="#007AFF" />
           </TouchableOpacity>
@@ -94,99 +153,102 @@ export default function MonitorScreen() {
             <Ionicons name="phone-portrait-outline" size={64} color="#8E8E93" />
             <Text style={styles.emptyTitle}>No Apps Being Monitored</Text>
             <Text style={styles.emptySubtitle}>
-              Add apps to start tracking your usage and reducing brain rot
+              Add apps from your device to start tracking usage and reducing brain rot
             </Text>
             <TouchableOpacity
               style={styles.primaryButton}
-              onPress={() => setShowAddApp(true)}
+              onPress={() => setShowAppSelection(true)}
             >
-              <Text style={styles.primaryButtonText}>Add Apps to Monitor</Text>
+              <Text style={styles.primaryButtonText}>Scan & Add Apps</Text>
             </TouchableOpacity>
           </View>
         ) : (
-          <View style={styles.appsList}>
-            {monitoredApps.map((app) => (
-              <View key={app.id} style={styles.appCard}>
-                <View style={styles.appInfo}>
-                  <View style={styles.appIconPlaceholder}>
-                    <Text style={styles.appIconText}>
-                      {app.name.charAt(0)}
-                    </Text>
-                  </View>
-                  <View style={styles.appDetails}>
-                    <Text style={styles.appName}>{app.name}</Text>
-                    <Text style={styles.appUsage}>
-                      {formatTime(app.timeUsed)} / {formatTime(app.dailyLimit)}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.appControls}>
-                  <View style={styles.progressContainer}>
-                    <View
-                      style={[
-                        styles.progressBar,
-                        {
-                          width: `${Math.min((app.timeUsed / app.dailyLimit) * 100, 100)}%`,
-                          backgroundColor: getUsageColor(app.timeUsed, app.dailyLimit),
-                        },
-                      ]}
-                    />
-                  </View>
-                  {app.isBlocked ? (
-                    <TouchableOpacity
-                      style={styles.challengeButton}
-                      onPress={() => handleAppBlock(app.id)}
-                    >
-                      <Text style={styles.challengeButtonText}>Solve to Unlock</Text>
-                    </TouchableOpacity>
-                  ) : (
-                    <View style={styles.statusIndicator}>
-                      <Ionicons 
-                        name="checkmark-circle" 
-                        size={20} 
-                        color="#34C759" 
-                      />
-                      <Text style={styles.statusText}>Active</Text>
-                    </View>
-                  )}
-                </View>
+          <>
+            {/* Stats Summary */}
+            <View style={styles.statsContainer}>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{monitoredApps.length}</Text>
+                <Text style={styles.statLabel}>Apps Monitored</Text>
               </View>
-            ))}
-          </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>
+                  {monitoredApps.filter(app => app.isBlocked).length}
+                </Text>
+                <Text style={styles.statLabel}>Currently Blocked</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>
+                  {Math.round(monitoredApps.reduce((acc, app) => acc + (app.percentage || 0), 0) / monitoredApps.length)}%
+                </Text>
+                <Text style={styles.statLabel}>Avg Usage</Text>
+              </View>
+            </View>
+
+            <View style={styles.appsList}>
+              {monitoredApps.map((app) => (
+                <View key={app.id} style={styles.appCard}>
+                  <View style={styles.appInfo}>
+                    <View style={[styles.appIconPlaceholder, { backgroundColor: getCategoryColor(app.category) }]}>
+                      <Ionicons 
+                        name={getCategoryIcon(app.category)} 
+                        size={24} 
+                        color="#FFF" 
+                      />
+                    </View>
+                    <View style={styles.appDetails}>
+                      <Text style={styles.appName}>{app.displayName || app.name}</Text>
+                      <Text style={styles.appUsage}>
+                        {formatTime(app.timeUsed)} / {formatTime(app.dailyLimit)}
+                      </Text>
+                      {app.category && (
+                        <Text style={styles.appCategory}>{app.category.toUpperCase()}</Text>
+                      )}
+                    </View>
+                  </View>
+
+                  <View style={styles.appControls}>
+                    <View style={styles.progressContainer}>
+                      <View
+                        style={[
+                          styles.progressBar,
+                          {
+                            width: `${Math.min((app.timeUsed / app.dailyLimit) * 100, 100)}%`,
+                            backgroundColor: getUsageColor(app.timeUsed, app.dailyLimit),
+                          },
+                        ]}
+                      />
+                    </View>
+                    {app.isBlocked ? (
+                      <TouchableOpacity
+                        style={styles.challengeButton}
+                        onPress={() => handleAppBlock(app.id)}
+                      >
+                        <Text style={styles.challengeButtonText}>Solve to Unlock</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <View style={styles.statusIndicator}>
+                        <Ionicons 
+                          name="checkmark-circle" 
+                          size={20} 
+                          color="#34C759" 
+                        />
+                        <Text style={styles.statusText}>Active</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              ))}
+            </View>
+          </>
         )}
       </ScrollView>
 
-      {/* Add App Modal */}
-      <Modal
-        visible={showAddApp}
-        animationType="slide"
-        presentationStyle="pageSheet"
-      >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setShowAddApp(false)}>
-              <Text style={styles.cancelButton}>Cancel</Text>
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>Add Apps</Text>
-            <View style={styles.placeholder} />
-          </View>
-          
-          <View style={styles.modalContent}>
-            <Text style={styles.sectionTitle}>Popular Social Media Apps</Text>
-            <TouchableOpacity
-              style={styles.primaryButton}
-              onPress={addSampleApps}
-            >
-              <Text style={styles.primaryButtonText}>Add Sample Apps</Text>
-            </TouchableOpacity>
-            <Text style={styles.helperText}>
-              This demo adds Instagram, TikTok, Twitter, and YouTube with preset limits.
-              In a real app, you would select from installed apps on your device.
-            </Text>
-          </View>
-        </SafeAreaView>
-      </Modal>
+      {/* Dynamic App Selection Modal */}
+      <DynamicAppSelection
+        visible={showAppSelection}
+        onClose={() => setShowAppSelection(false)}
+        onAppsSelected={handleAppsSelected}
+      />
 
       {/* Challenge Modal */}
       <Modal
@@ -215,7 +277,7 @@ export default function MonitorScreen() {
                 style={styles.primaryButton}
                 onPress={() => {
                   setShowChallengeModal(false);
-                  // Navigate to Challenge screen
+                  // Navigate to Challenge screen would go here
                 }}
               >
                 <Text style={styles.primaryButtonText}>Start Challenge</Text>
@@ -226,6 +288,21 @@ export default function MonitorScreen() {
       </Modal>
     </SafeAreaView>
   );
+
+  function getCategoryColor(category?: string): string {
+    const colors: Record<string, string> = {
+      social: '#FF3B30',
+      entertainment: '#FF9500',
+      communication: '#007AFF',
+      music: '#AF52DE',
+      news: '#5856D6',
+      productivity: '#34C759',
+      games: '#FF2D92',
+      shopping: '#FF6B35',
+      finance: '#30B0C7',
+    };
+    return colors[category || 'social'] || '#007AFF';
+  }
 }
 
 const styles = StyleSheet.create({
