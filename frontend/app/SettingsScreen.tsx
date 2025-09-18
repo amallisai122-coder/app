@@ -21,6 +21,7 @@ export default function SettingsScreen() {
     removeMonitoredApp,
     achievements,
     completedChallenges,
+    resetAllData, // Add this function to the store
   } = useAppState();
 
   const [showDifficultyModal, setShowDifficultyModal] = useState(false);
