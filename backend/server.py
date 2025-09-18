@@ -46,13 +46,43 @@ class ChallengeRequest(BaseModel):
     difficulty: Optional[str] = "medium"
     user_performance: Optional[List[Dict[str, Any]]] = []
 
+class AppInfo(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    packageName: str
+    appName: str
+    displayName: str
+    category: Optional[str] = "social"
+    icon: Optional[str] = None  # base64 encoded icon
+    isSystemApp: bool = False
+    version: Optional[str] = None
+    installDate: Optional[datetime] = None
+    lastUsed: Optional[datetime] = None
+
+class MonitoredApp(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    userId: Optional[str] = "default"  # For multi-user support later
+    packageName: str
+    appName: str
+    displayName: str
+    icon: Optional[str] = None
+    dailyLimit: int  # minutes
+    timeUsed: int = 0  # minutes today
+    isBlocked: bool = False
+    category: Optional[str] = "social"
+    isActive: bool = True
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+    updatedAt: datetime = Field(default_factory=datetime.utcnow)
+
 class UsageSession(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    userId: Optional[str] = "default"
     appId: str
+    packageName: str
     appName: str
     duration: int  # minutes
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     date: str
+    sessionType: str = "active"  # active, background, foreground
 
 class Analytics(BaseModel):
     totalTimeUsed: int
