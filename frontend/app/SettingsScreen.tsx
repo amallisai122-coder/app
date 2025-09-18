@@ -51,7 +51,7 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleResetData = () => {
+  const handleResetData = async () => {
     Alert.alert(
       'Reset All Data',
       'This will permanently delete all your progress, challenges, and analytics. This action cannot be undone.',
@@ -60,9 +60,14 @@ export default function SettingsScreen() {
         { 
           text: 'Reset', 
           style: 'destructive',
-          onPress: () => {
-            // In a real app, you would implement data clearing
-            Alert.alert('Success', 'All data has been reset.');
+          onPress: async () => {
+            try {
+              await resetAllData();
+              Alert.alert('Success', 'All data has been reset.');
+            } catch (error) {
+              console.error('Failed to reset data:', error);
+              Alert.alert('Error', 'Failed to reset data. Please try again.');
+            }
           }
         },
       ]
