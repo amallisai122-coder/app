@@ -91,6 +91,7 @@ interface AppState {
   // Persistence
   loadData: () => Promise<void>;
   saveData: () => Promise<void>;
+  resetAllData: () => Promise<void>;
 }
 
 const useAppStore = create<AppState>((set, get) => ({
