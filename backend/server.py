@@ -391,15 +391,105 @@ async def get_app_daily_limit(app_id: str) -> int:
     app = await db.monitored_apps.find_one({"id": app_id})
     return app.get("dailyLimit", 60) if app else 60
 
-# Enhanced usage session logging with real app data
+@api_router.post("/usage/session", response_model=UsageSession)
 async def log_usage_session(session: UsageSession):
-    """Log a usage session"""
+    """Log a usage session with enhanced tracking"""
     try:
+        # Update monitored app usage if this is for a monitored app
+        monitored_app = await db.monitored_apps.find_one({
+            "packageName": session.packageName,
+            "userId": session.userId,
+            "isActive": True
+        })
+        
+        if monitored_app:
+            current_usage = monitored_app.get("timeUsed", 0)
+            new_usage = current_usage + session.duration
+            
+            await db.monitored_apps.update_one(
+                {"packageName": session.packageName, "userId": session.userId},
+                {
+                    "$set": {
+                        "timeUsed": new_usage,
+                        "isBlocked": new_usage >= monitored_app.get("dailyLimit", 60),
+                        "updatedAt": datetime.utcnow()
+                    }
+                }
+            )
+        
+        # Store the usage session
         await db.usage_sessions.insert_one(session.dict())
         return session
     except Exception as e:
         logger.error(f"Failed to log usage session: {e}")
         raise HTTPException(status_code=500, detail="Failed to log usage session")
+
+@api_router.get("/usage/apps/{package_name}/daily")
+async def get_daily_app_usage(package_name: str, user_id: str = "default"):
+    """Get daily usage for a specific app"""
+    try:
+        from datetime import timedelta
+        today = datetime.utcnow().date()
+        start_date = datetime.combine(today, datetime.min.time())
+        end_date = start_date + timedelta(days=1)
+        
+        sessions = await db.usage_sessions.find({
+            "packageName": package_name,
+            "userId": user_id,
+            "timestamp": {"$gte": start_date, "$lt": end_date}
+        }).to_list(1000)
+        
+        total_usage = sum(session.get("duration", 0) for session in sessions)
+        
+        return {
+            "packageName": package_name,
+            "totalUsage": total_usage,
+            "sessionCount": len(sessions),
+            "date": today.isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Failed to get daily app usage: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get daily app usage")
+
+@api_router.get("/usage/realtime")
+async def get_realtime_usage(user_id: str = "default"):
+    """Get real-time usage data for all monitored apps"""
+    try:
+        monitored_apps = await db.monitored_apps.find({
+            "userId": user_id,
+            "isActive": True
+        }).to_list(100)
+        
+        usage_data = []
+        for app in monitored_apps:
+            # Get today's usage from sessions
+            from datetime import timedelta
+            today = datetime.utcnow().date()
+            start_date = datetime.combine(today, datetime.min.time())
+            end_date = start_date + timedelta(days=1)
+            
+            sessions = await db.usage_sessions.find({
+                "packageName": app["packageName"],
+                "userId": user_id,
+                "timestamp": {"$gte": start_date, "$lt": end_date}
+            }).to_list(1000)
+            
+            daily_usage = sum(session.get("duration", 0) for session in sessions)
+            
+            usage_data.append({
+                "id": app["id"],
+                "packageName": app["packageName"],
+                "appName": app["appName"],
+                "dailyLimit": app["dailyLimit"],
+                "timeUsed": daily_usage,
+                "isBlocked": daily_usage >= app["dailyLimit"],
+                "percentage": min((daily_usage / app["dailyLimit"]) * 100, 100)
+            })
+        
+        return usage_data
+    except Exception as e:
+        logger.error(f"Failed to get realtime usage: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get realtime usage")
 
 @api_router.get("/usage/sessions")
 async def get_usage_sessions(days: int = 30):
