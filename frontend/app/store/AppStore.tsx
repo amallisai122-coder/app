@@ -467,6 +467,76 @@ const useAppStore = create<AppState>((set, get) => ({
       console.error('Failed to save data:', error);
     }
   },
+
+  resetAllData: async () => {
+    try {
+      // Clear all local storage
+      await AsyncStorage.clear();
+      
+      // Reset all monitored apps from backend
+      const state = get();
+      for (const app of state.monitoredApps) {
+        try {
+          await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/apps/monitored/${app.id}`, {
+            method: 'DELETE',
+          });
+        } catch (error) {
+          console.warn(`Failed to remove ${app.name} from backend:`, error);
+        }
+      }
+
+      // Reset state to initial values
+      set({
+        monitoredApps: [],
+        currentChallenge: null,
+        completedChallenges: [],
+        usageSessions: [],
+        detectedApps: [],
+        achievements: [
+          {
+            id: '1',
+            title: 'First Challenge',
+            description: 'Complete your first math challenge',
+            icon: 'trophy',
+            unlocked: false,
+          },
+          {
+            id: '2',
+            title: 'Week Warrior',
+            description: 'Stay within limits for 7 consecutive days',
+            icon: 'calendar',
+            unlocked: false,
+          },
+          {
+            id: '3',
+            title: 'Math Master',
+            description: 'Answer 50 challenges correctly',
+            icon: 'calculator',
+            unlocked: false,
+          },
+          {
+            id: '4',
+            title: 'App Detective',
+            description: 'Monitor your first dynamic app',
+            icon: 'search',
+            unlocked: false,
+          },
+        ],
+        settings: {
+          difficultySetting: 'auto',
+          notificationsEnabled: true,
+          weekendMode: false,
+          dailyGoal: 60,
+          realTimeMonitoring: true,
+        },
+      });
+
+      console.log('All data has been reset successfully');
+    } catch (error) {
+      console.error('Failed to reset data:', error);
+      throw error;
+    }
+  },
 }));
 
 // Helper function to get default limits based on app category
