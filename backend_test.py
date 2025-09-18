@@ -216,6 +216,250 @@ class BackendTester:
             self.log_test("Analytics", False, f"Exception: {str(e)}")
             return None
     
+    async def test_app_registration(self):
+        """Test app registration endpoint"""
+        try:
+            app_data = {
+                "id": str(uuid.uuid4()),
+                "packageName": "com.instagram.android",
+                "appName": "Instagram",
+                "displayName": "Instagram",
+                "category": "social",
+                "icon": "base64_encoded_icon_data",
+                "isSystemApp": False,
+                "version": "1.0.0",
+                "installDate": datetime.utcnow().isoformat(),
+                "lastUsed": datetime.utcnow().isoformat()
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/apps/register", json=app_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_test("App Registration", True, 
+                                f"Registered {data.get('appName')} ({data.get('packageName')})")
+                    return data
+                else:
+                    self.log_test("App Registration", False,
+                                f"HTTP {response.status}", await response.text())
+                    return None
+        except Exception as e:
+            self.log_test("App Registration", False, f"Exception: {str(e)}")
+            return None
+
+    async def test_app_registry_retrieval(self):
+        """Test app registry retrieval"""
+        try:
+            async with self.session.get(f"{BACKEND_URL}/apps/registry") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if isinstance(data, list):
+                        self.log_test("App Registry Retrieval", True,
+                                    f"Retrieved {len(data)} registered apps")
+                        return data
+                    else:
+                        self.log_test("App Registry Retrieval", False,
+                                    "Response is not a list", data)
+                        return None
+                else:
+                    self.log_test("App Registry Retrieval", False,
+                                f"HTTP {response.status}", await response.text())
+                    return None
+        except Exception as e:
+            self.log_test("App Registry Retrieval", False, f"Exception: {str(e)}")
+            return None
+
+    async def test_monitored_app_management(self):
+        """Test monitored app management endpoints"""
+        # Test adding monitored app
+        monitored_app_data = {
+            "id": str(uuid.uuid4()),
+            "userId": "default",
+            "packageName": "com.tiktok.android",
+            "appName": "TikTok",
+            "displayName": "TikTok",
+            "icon": "base64_icon_data",
+            "dailyLimit": 60,  # 60 minutes
+            "timeUsed": 0,
+            "isBlocked": False,
+            "category": "social",
+            "isActive": True,
+            "createdAt": datetime.utcnow().isoformat(),
+            "updatedAt": datetime.utcnow().isoformat()
+        }
+        
+        try:
+            # Add monitored app
+            async with self.session.post(f"{BACKEND_URL}/apps/monitored", 
+                                       json=monitored_app_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    app_id = data.get("id")
+                    self.log_test("Add Monitored App", True,
+                                f"Added {data.get('appName')} to monitoring")
+                    
+                    # Test getting monitored apps
+                    async with self.session.get(f"{BACKEND_URL}/apps/monitored?user_id=default") as get_response:
+                        if get_response.status == 200:
+                            monitored_apps = await get_response.json()
+                            self.log_test("Get Monitored Apps", True,
+                                        f"Retrieved {len(monitored_apps)} monitored apps")
+                        else:
+                            self.log_test("Get Monitored Apps", False,
+                                        f"HTTP {get_response.status}", await get_response.text())
+                    
+                    # Test updating app usage
+                    if app_id:
+                        async with self.session.put(f"{BACKEND_URL}/apps/monitored/{app_id}/usage",
+                                                  params={"time_used": 30}) as update_response:
+                            if update_response.status == 200:
+                                update_data = await update_response.json()
+                                self.log_test("Update App Usage", True,
+                                            f"Updated usage to {update_data.get('timeUsed')} minutes")
+                            else:
+                                self.log_test("Update App Usage", False,
+                                            f"HTTP {update_response.status}", await update_response.text())
+                        
+                        # Test removing monitored app
+                        async with self.session.delete(f"{BACKEND_URL}/apps/monitored/{app_id}") as delete_response:
+                            if delete_response.status == 200:
+                                delete_data = await delete_response.json()
+                                self.log_test("Remove Monitored App", True,
+                                            f"Successfully removed app from monitoring")
+                            else:
+                                self.log_test("Remove Monitored App", False,
+                                            f"HTTP {delete_response.status}", await delete_response.text())
+                    
+                    return data
+                else:
+                    self.log_test("Add Monitored App", False,
+                                f"HTTP {response.status}", await response.text())
+                    return None
+        except Exception as e:
+            self.log_test("Monitored App Management", False, f"Exception: {str(e)}")
+            return None
+
+    async def test_app_search_and_categories(self):
+        """Test app search and categories endpoints"""
+        try:
+            # Test app search
+            async with self.session.get(f"{BACKEND_URL}/apps/search?query=instagram&category=social&limit=10") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    apps = data.get("apps", [])
+                    self.log_test("App Search", True,
+                                f"Found {len(apps)} apps matching 'instagram' in social category")
+                else:
+                    self.log_test("App Search", False,
+                                f"HTTP {response.status}", await response.text())
+            
+            # Test get categories
+            async with self.session.get(f"{BACKEND_URL}/apps/categories") as response:
+                if response.status == 200:
+                    categories = await response.json()
+                    self.log_test("Get App Categories", True,
+                                f"Retrieved {len(categories)} app categories")
+                    return categories
+                else:
+                    self.log_test("Get App Categories", False,
+                                f"HTTP {response.status}", await response.text())
+                    return None
+        except Exception as e:
+            self.log_test("App Search and Categories", False, f"Exception: {str(e)}")
+            return None
+
+    async def test_bulk_app_registration(self):
+        """Test bulk app registration"""
+        try:
+            apps_data = [
+                {
+                    "id": str(uuid.uuid4()),
+                    "packageName": "com.youtube.android",
+                    "appName": "YouTube",
+                    "displayName": "YouTube",
+                    "category": "entertainment",
+                    "isSystemApp": False,
+                    "version": "1.0.0"
+                },
+                {
+                    "id": str(uuid.uuid4()),
+                    "packageName": "com.spotify.music",
+                    "appName": "Spotify",
+                    "displayName": "Spotify Music",
+                    "category": "music",
+                    "isSystemApp": False,
+                    "version": "1.0.0"
+                }
+            ]
+            
+            async with self.session.post(f"{BACKEND_URL}/apps/bulk-register", json=apps_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    registered = data.get("registered", 0)
+                    updated = data.get("updated", 0)
+                    total = data.get("total", 0)
+                    self.log_test("Bulk App Registration", True,
+                                f"Registered: {registered}, Updated: {updated}, Total: {total}")
+                    return data
+                else:
+                    self.log_test("Bulk App Registration", False,
+                                f"HTTP {response.status}", await response.text())
+                    return None
+        except Exception as e:
+            self.log_test("Bulk App Registration", False, f"Exception: {str(e)}")
+            return None
+
+    async def test_enhanced_usage_tracking(self):
+        """Test enhanced usage tracking endpoints"""
+        try:
+            # Test enhanced usage session logging
+            session_data = {
+                "id": str(uuid.uuid4()),
+                "userId": "default",
+                "appId": "com.instagram.android",
+                "packageName": "com.instagram.android",
+                "appName": "Instagram",
+                "duration": 25,
+                "timestamp": datetime.utcnow().isoformat(),
+                "date": datetime.utcnow().strftime("%Y-%m-%d"),
+                "sessionType": "active"
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/usage/session", json=session_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_test("Enhanced Usage Session Logging", True,
+                                f"Logged {session_data['duration']} min session for {session_data['appName']}")
+                else:
+                    self.log_test("Enhanced Usage Session Logging", False,
+                                f"HTTP {response.status}", await response.text())
+            
+            # Test daily app usage
+            async with self.session.get(f"{BACKEND_URL}/usage/apps/com.instagram.android/daily?user_id=default") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    total_usage = data.get("totalUsage", 0)
+                    session_count = data.get("sessionCount", 0)
+                    self.log_test("Daily App Usage", True,
+                                f"Instagram: {total_usage} min total, {session_count} sessions today")
+                else:
+                    self.log_test("Daily App Usage", False,
+                                f"HTTP {response.status}", await response.text())
+            
+            # Test realtime usage data
+            async with self.session.get(f"{BACKEND_URL}/usage/realtime?user_id=default") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_test("Realtime Usage Data", True,
+                                f"Retrieved realtime data for {len(data)} monitored apps")
+                    return data
+                else:
+                    self.log_test("Realtime Usage Data", False,
+                                f"HTTP {response.status}", await response.text())
+                    return None
+        except Exception as e:
+            self.log_test("Enhanced Usage Tracking", False, f"Exception: {str(e)}")
+            return None
+
     async def test_error_handling(self):
         """Test error handling for invalid requests"""
         error_tests = []
@@ -250,6 +494,26 @@ class BackendTester:
                                       f"HTTP {response.status}"))
         except Exception as e:
             error_tests.append(("Invalid Difficulty Fallback", False, f"Exception: {str(e)}"))
+
+        # Test invalid monitored app operations
+        try:
+            async with self.session.put(f"{BACKEND_URL}/apps/monitored/invalid-id/usage",
+                                      params={"time_used": 30}) as response:
+                if response.status == 404:
+                    error_tests.append(("Invalid Monitored App Update", True, "Correctly returned 404"))
+                else:
+                    error_tests.append(("Invalid Monitored App Update", False, f"Expected 404, got {response.status}"))
+        except Exception as e:
+            error_tests.append(("Invalid Monitored App Update", False, f"Exception: {str(e)}"))
+
+        try:
+            async with self.session.delete(f"{BACKEND_URL}/apps/monitored/invalid-id") as response:
+                if response.status == 404:
+                    error_tests.append(("Invalid Monitored App Delete", True, "Correctly returned 404"))
+                else:
+                    error_tests.append(("Invalid Monitored App Delete", False, f"Expected 404, got {response.status}"))
+        except Exception as e:
+            error_tests.append(("Invalid Monitored App Delete", False, f"Exception: {str(e)}"))
         
         # Log all error handling tests
         for test_name, success, details in error_tests:
