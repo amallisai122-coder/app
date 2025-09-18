@@ -80,15 +80,18 @@ export default function ChallengeScreen() {
   };
 
   const todayStats = {
-    attempted: completedChallenges.filter(c => 
-      new Date(c.id).toDateString() === new Date().toDateString()
-    ).length,
-    correct: completedChallenges.filter(c => 
-      new Date(c.id).toDateString() === new Date().toDateString() && c.correct
-    ).length,
-    timeEarned: completedChallenges.filter(c => 
-      new Date(c.id).toDateString() === new Date().toDateString() && c.correct
-    ).reduce((sum, c) => sum + c.timeReward, 0),
+    attempted: completedChallenges.filter(c => {
+      const challengeDate = new Date(parseInt(c.id));
+      return !isNaN(challengeDate.getTime()) && challengeDate.toDateString() === new Date().toDateString();
+    }).length,
+    correct: completedChallenges.filter(c => {
+      const challengeDate = new Date(parseInt(c.id));
+      return !isNaN(challengeDate.getTime()) && challengeDate.toDateString() === new Date().toDateString() && c.correct;
+    }).length,
+    timeEarned: completedChallenges.filter(c => {
+      const challengeDate = new Date(parseInt(c.id));
+      return !isNaN(challengeDate.getTime()) && challengeDate.toDateString() === new Date().toDateString() && c.correct;
+    }).reduce((sum, c) => sum + c.timeReward, 0),
   };
 
   return (
