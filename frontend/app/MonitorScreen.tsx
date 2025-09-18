@@ -142,7 +142,12 @@ export default function MonitorScreen() {
           <Text style={styles.title}>App Monitor</Text>
           <TouchableOpacity
             style={styles.addButton}
-            onPress={() => setShowAppSelection(true)}
+            onPress={() => {
+              console.log('Add button pressed');
+              setShowAppSelection(true);
+            }}
+            activeOpacity={0.7}
+            testID="add-apps-button"
           >
             <Ionicons name="add" size={24} color="#007AFF" />
           </TouchableOpacity>
